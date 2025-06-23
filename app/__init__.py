@@ -29,69 +29,60 @@ init_datetime(app)  # Handle UTC dates in timestamps
 #-----------------------------------------------------------
 @app.get("/")
 def index():
-    return render_template("pages/home.jinja")
-
-
-#-----------------------------------------------------------
-# About page route
-#-----------------------------------------------------------
-@app.get("/about/")
-def about():
-    return render_template("pages/about.jinja")
-
-
-#-----------------------------------------------------------
-# Things page route - Show all the things, and new thing form
-#-----------------------------------------------------------
-@app.get("/things/")
-def show_all_things():
     with connect_db() as client:
         # Get all the things from the DB
         sql = """
-            SELECT things.id,
-                   things.name,
-                   users.name AS owner
-
-            FROM things
-            JOIN users ON things.user_id = users.id
-
-            ORDER BY things.name ASC
+            SELECT code, name
+            FROM teams
+            ORDER BY name ASC
         """
         params=[]
         result = client.execute(sql, params)
-        things = result.rows
+        teams = result.rows
 
         # And show them on the page
-        return render_template("pages/things.jinja", things=things)
+        return render_template("pages/home.jinja", teams=teams)
 
 
 #-----------------------------------------------------------
-# Thing page route - Show details of a single thing
+# Team page route - Show details of a single thing
 #-----------------------------------------------------------
-@app.get("/thing/<int:id>")
-def show_one_thing(id):
+@app.get("/team/<code>")
+def show_one_thing(code):
     with connect_db() as client:
-        # Get the thing details from the DB, including the owner info
+        # Get the team details from the DB, including the manager info
         sql = """
-            SELECT things.id,
-                   things.name,
-                   things.price,
-                   things.user_id,
-                   users.name AS owner
+            SELECT teams.code,
+                   teams.name AS team_name,
+                   teams.description,
+                   teams.website,
+                   teams.manager,
+                   users.name AS manager_name
 
-            FROM things
-            JOIN users ON things.user_id = users.id
+            FROM teams
+            JOIN users ON teams.manager = users.id
 
-            WHERE things.id=?
+            WHERE teams.code=?
         """
-        params = [id]
+        params = [code]
         result = client.execute(sql, params)
 
         # Did we get a result?
         if result.rows:
-            # yes, so show it on the page
-            thing = result.rows[0]
-            return render_template("pages/thing.jinja", thing=thing)
+            # yes, so get the players and show it on the page
+            team = result.rows[0]
+
+            # Get the team players
+            sql = """
+                SELECT name, notes
+                FROM players
+                WHERE team=?
+            """
+            params = [code]
+            result = client.execute(sql, params)
+            players = result.rows
+
+            return render_template("pages/team.jinja", team=team, players=players)
 
         else:
             # No, so show error
@@ -99,31 +90,37 @@ def show_one_thing(id):
 
 
 #-----------------------------------------------------------
-# Route for adding a thing, using data posted from a form
+# Route for adding a team, using data posted from a form
 # - Restricted to logged in users
 #-----------------------------------------------------------
 @app.post("/add")
 @login_required
 def add_a_thing():
     # Get the data from the form
+    code  = request.form.get("code")
     name  = request.form.get("name")
-    price = request.form.get("price")
+    desc  = request.form.get("description")
+    web   = request.form.get("website")
 
     # Sanitise the text inputs
     name = html.escape(name)
+    desc = html.escape(desc)
 
     # Get the user id from the session
     user_id = session["user_id"]
 
     with connect_db() as client:
         # Add the thing to the DB
-        sql = "INSERT INTO things (name, price, user_id) VALUES (?, ?, ?)"
-        params = [name, price, user_id]
+        sql = """
+            INSERT INTO teams (code, name, description, website, manager)
+            VALUES (?, ?, ?, ?, ?)
+        """
+        params = [code, name, desc, web, user_id]
         client.execute(sql, params)
 
         # Go back to the home page
-        flash(f"Thing '{name}' added", "success")
-        return redirect("/things")
+        flash(f"Team '{name}' added", "success")
+        return redirect("/")
 
 
 #-----------------------------------------------------------

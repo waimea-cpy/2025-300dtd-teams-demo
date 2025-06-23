@@ -1,0 +1,91 @@
+{#=====================================================
+  Team page
+  - Shows details of a single team
+  - Has a delete link to remove it
+=====================================================#}
+
+{% extends 'pages/base.jinja' %}
+
+
+{% block title %}
+
+    Flask Demo - Team Info
+
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>{{ team.team_name }}</h1>
+
+
+    <article>
+
+        <header>
+            <h3>Team Details</h3>
+        </header>
+
+        <p>{{ team.description }}</p>
+
+        <p>Manager: <strong>{{ team.manager_name }}</strong></p>
+
+        <footer>
+
+            {# Only show delete link if logged in AND owner #}
+            {% if session.logged_in and (team.manager == session.user_id) %}
+
+                <a href="/delete/{{ team.id }}" onclick="return confirm('Really delete?');">Delete</a>
+
+            {% endif %}
+
+        </footer>
+
+    </article>
+
+    <article>
+
+        <header>
+            <h3>Team Players</h3>
+        </header>
+
+        <ul>
+            {% for player in players %}
+
+                <li>
+                    {{ player.name }}
+
+                    {% if player.notes %}
+
+                        - {{ player.notes }}
+
+                    {% endif%}
+                </li>
+
+            {% else %}
+
+                <p>None!</p>
+
+            {% endfor %}
+        </ul>
+
+        <footer>
+
+            {# Only show delete link if logged in AND owner #}
+            {% if session.logged_in and (team.manager == session.user_id) %}
+
+                <form action="/add-player" method="POST">
+
+                    <button>Add Player</button>
+                </form>
+
+            {% endif %}
+
+        </footer>
+
+    </article>
+
+
+    <a role="button" href="/things">Back to Thing List</a>
+
+{% endblock %}
+

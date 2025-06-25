@@ -9,7 +9,7 @@
 
 {% block title %}
 
-    Team Tracker 6000
+    Team Manager 6000
 
 {% endblock %}
 
@@ -19,69 +19,76 @@
     <h1>Teams</h1>
 
 
-    <article>
+    <section id="team-list" class="{% if session.user_id %} logged-in {% endif %}">
 
-        <ul>
-            {% for team in teams %}
+        {% for team in teams %}
 
-                <li>
-                    <a href="/team/{{ team.code }}">
-                        <strong>{{ team.name }}</strong>
-                    </a>
-                </li>
+            <article class="{% if team.manager == session.user_id %} owned {% endif %}">
+                <h2>{{ team.name }}</h2>
 
-            {% else %}
+                <p>{{ team.description }}</p>
 
-                <p>None!</p>
+                <a href="/team/{{ team.code }}">
+                    <p>See details...</p>
+                </a>
+            </article>
 
-            {% endfor %}
-        </ul>
+        {% else %}
 
-    </article>
+            <p>None!</p>
+
+        {% endfor %}
+
+    </section>
 
 
     {# Only show form if user is logged in #}
     {% if session.user_id %}
 
-        <article>
+        <details id="team-form">
 
-            <h3>Add a New Team</h3>
+            <summary role="button">Add a New Team</summary>
 
-            <form action="/add" method="POST">
+            <article>
 
-                <input
-                    type="text"
-                    name="code"
-                    placeholder="Team code"
-                    required
-                >
+                <form action="/add" method="POST">
 
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Team name"
-                    required
-                >
+                    <input
+                        type="text"
+                        name="code"
+                        placeholder="Team code"
+                        required
+                    >
 
-                <input
-                    type="text"
-                    name="description"
-                    placeholder="Team description"
-                    required
-                >
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Team name"
+                        required
+                    >
 
-                <input
-                    type="url"
-                    name="website"
-                    placeholder="Team website URL"
-                    required
-                >
+                    <input
+                        type="text"
+                        name="description"
+                        placeholder="Team description"
+                        required
+                    >
 
-                <button>Add Team</button>
+                    <input
+                        type="url"
+                        name="website"
+                        placeholder="Team website URL"
+                        required
+                    >
 
-            </form>
+                    <button>Add Team</button>
 
-        </article>
+                </form>
+
+            </article>
+
+        </details>
+
 
     {% endif %}
 

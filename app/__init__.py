@@ -32,7 +32,7 @@ def index():
     with connect_db() as client:
         # Get all the things from the DB
         sql = """
-            SELECT code, name
+            SELECT code, name, description, manager
             FROM teams
             ORDER BY name ASC
         """
@@ -124,24 +124,53 @@ def add_a_thing():
 
 
 #-----------------------------------------------------------
-# Route for deleting a thing, Id given in the route
+# Route for adding a player to a team, using data posted from a form
+# - Restricted to logged in users
+#-----------------------------------------------------------
+@app.post("/add-player/<code>")
+@login_required
+def add_a_player(code):
+    # Get the data from the form
+    name  = request.form.get("name")
+    notes = request.form.get("notes")
+
+    # Sanitise the text inputs
+    name  = html.escape(name)
+    notes = html.escape(notes)
+
+    with connect_db() as client:
+        # Add the thing to the DB
+        sql = """
+            INSERT INTO players (name, notes, team)
+            VALUES (?, ?, ?)
+        """
+        params = [name, notes, code]
+        client.execute(sql, params)
+
+        # Go back to the home page
+        flash(f"Player '{name}' added", "success")
+        return redirect(f"/team/{code}")
+
+
+#-----------------------------------------------------------
+# Route for deleting a team, Id given in the route
 # - Restricted to logged in users
 #-----------------------------------------------------------
 @app.get("/delete/<int:id>")
 @login_required
-def delete_a_thing(id):
+def delete_a_team(id):
     # Get the user id from the session
     user_id = session["user_id"]
 
     with connect_db() as client:
         # Delete the thing from the DB only if we own it
-        sql = "DELETE FROM things WHERE id=? AND user_id=?"
+        sql = "DELETE FROM teams WHERE id=? AND user_id=?"
         params = [id, user_id]
         client.execute(sql, params)
 
         # Go back to the home page
-        flash("Thing deleted", "success")
-        return redirect("/things")
+        flash("Team and players deleted", "success")
+        return redirect("/")
 
 
 
@@ -161,6 +190,7 @@ def register_form():
 # User login form route
 #-----------------------------------------------------------
 @app.get("/login")
+@app.get("/login/")
 def login_form():
     return render_template("pages/login.jinja")
 

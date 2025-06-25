@@ -3,31 +3,79 @@
 =====================================================*/
 
 
-/* ABOUT PAGE -------------------------------------------- */
+/* GENERAL -------------------------------------------- */
 
-#tech-stack {
+main > h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+main > article:has(form) {
+    max-width: 30rem;
+    margin-inline: auto;
+}
+
+
+/* HOME / TEAMS PAGE -------------------------------------------- */
+
+#team-list {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-#tech-stack article {
-    flex: 1;
+#team-list article {
+    width: 100%;
+    max-width: 20rem;
 }
+
+#team-list article.owned {
+    border: 1px solid var(--pico-primary-border);
+}
+
+#team-list.logged-in article:not(.owned) {
+    opacity: 0.6;
+}
+
+#team-list article:not(.owned):hover {
+    opacity: 1;
+}
+
+
+#team-form {
+    max-width: 30rem;
+    margin: 2rem auto;
+}
+
+
+/* TEAM PAGE -------------------------------------------- */
+
+#team-details {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+#team-details article {
+    width: 100%;
+    max-width: 25rem;
+}
+
 
 
 /* MESSAGES -------------------------------------------- */
 
 #messages ul {
     width: fit-content;
-    margin: 2rem auto;
+    margin: 0;
     padding: 0;
 }
 
 #messages .message {
     list-style: none;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-block: 0.5rem;
 }
 
 #messages .message.success { color: var(--pico-color-green-500); }

@@ -16,76 +16,100 @@
 
 {% block content %}
 
-    <h1>{{ team.team_name }}</h1>
+    <h1>Team Details</h1>
 
 
-    <article>
+    <section id="team-details">
 
-        <header>
-            <h3>Team Details</h3>
-        </header>
+        <article>
 
-        <p>{{ team.description }}</p>
+            <header>
+                <h2>{{ team.team_name }}</h2>
+            </header>
 
-        <p>Manager: <strong>{{ team.manager_name }}</strong></p>
+            <p>{{ team.description }}</p>
 
-        <footer>
+            <p>
+                Manager: <strong>{{ team.manager_name }}</strong>
 
-            {# Only show delete link if logged in AND owner #}
-            {% if session.logged_in and (team.manager == session.user_id) %}
+                {% if team.manager == session.user_id %} (YOU!) {% endif %}
+            </p>
 
-                <a href="/delete/{{ team.id }}" onclick="return confirm('Really delete?');">Delete</a>
-
-            {% endif %}
-
-        </footer>
-
-    </article>
-
-    <article>
-
-        <header>
-            <h3>Team Players</h3>
-        </header>
-
-        <ul>
-            {% for player in players %}
-
-                <li>
-                    {{ player.name }}
-
-                    {% if player.notes %}
-
-                        - {{ player.notes }}
-
-                    {% endif%}
-                </li>
-
-            {% else %}
-
-                <p>None!</p>
-
-            {% endfor %}
-        </ul>
-
-        <footer>
+            <p>Website: <a href="{{ team.website }}">{{ team.website }}</a></p>
 
             {# Only show delete link if logged in AND owner #}
             {% if session.logged_in and (team.manager == session.user_id) %}
 
-                <form action="/add-player" method="POST">
+                <footer>
 
-                    <button>Add Player</button>
-                </form>
+                    <a href="/delete/{{ team.id }}" onclick="return confirm('Really delete?');">Delete</a>
+
+                </footer>
 
             {% endif %}
 
-        </footer>
+        </article>
 
-    </article>
+        <article>
 
+            <header>
+                <h3>Players</h3>
+            </header>
 
-    <a role="button" href="/things">Back to Thing List</a>
+            <ul>
+                {% for player in players %}
+
+                    <li>
+                        {{ player.name }}
+
+                        {% if player.notes %}
+
+                            - {{ player.notes }}
+
+                        {% endif%}
+                    </li>
+
+                {% else %}
+
+                    <p>None!</p>
+
+                {% endfor %}
+            </ul>
+
+            {# Only show delete link if logged in AND owner #}
+            {% if session.logged_in and (team.manager == session.user_id) %}
+
+                <details id="player-form">
+
+                    <summary role="button">Add a New Player</summary>
+
+                    <form action="/add-player/{{ team.code }}" method="POST">
+
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Player name"
+                            required
+                        >
+
+                        <input
+                            type="text"
+                            name="notes"
+                            placeholder="Player notes (optional)"
+                        >
+
+                        <button>Add Player</button>
+
+                    </form>
+
+                </details>
+
+            {% endif %}
+
+        </article>
+
+    </section>
+
 
 {% endblock %}
 
